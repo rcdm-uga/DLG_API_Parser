@@ -8,7 +8,7 @@ on the copyright and the host of the item, the API may return a blank field inst
 of a direct link. In this case, this program will generate the thumbnail that way
 Omeka's plugin will not skip it when trying to read it in.*
 
-The specifics about Omeka's CSVImport will be in `DLG_Omeka_API_Pipeline.docx` file.
+The specifics about Omeka's CSVImport will be in `DLG_Omeka_API_Pipeline.pdf` file.
 
 ### Dependencies
 python 3+:
