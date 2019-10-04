@@ -14,6 +14,7 @@ The specifics about Omeka's CSVImport will be in `DLG_Omeka_API_Pipeline.docx` f
 python 3+:
   1. Pandas
   2. requests
+
 The reset come preinstalled with python.
 
 
