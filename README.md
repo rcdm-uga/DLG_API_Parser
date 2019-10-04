@@ -19,7 +19,7 @@ python 3+:
   1. pandas v 0.25.1+
   2. requests 2.22.0+
 
-The reset come preinstalled with python.
+The rest come preinstalled with python.
 
 
 ### How to Run
