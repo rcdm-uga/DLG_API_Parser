@@ -1,0 +1,3 @@
+https://dlg.usg.edu/record/dlg_vang_clr018
+https://dlg.usg.edu/records?f%5Bcounties_facet%5D%5B%5D=DeKalb&only_path=true&q=speech&search_field=all_fields
+https://dlg.usg.edu/records.json?f%5Bcounties_facet%5D%5B%5D=DeKalb&only_path=true&q=speech&search_field=all_fields

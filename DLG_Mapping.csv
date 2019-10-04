@@ -1,0 +1,24 @@
+dlg_local_right,Access Rights
+dcterms_bibliographic_citation,Bibliographic Citation
+dcterms_contributor,Contributor
+dcterms_spatial,Spatial Coverage
+dcterms_creator,Creator
+dc_date,Date
+dcterms_description,Description
+dcterms_extent,Extent
+edm_is_shown_by,File
+dc_format,Format
+dcterms_identifier,Identifier
+edm_is_shown_at,Is Referenced By
+dcterms_language,Language
+DLGadmin,Omeka
+dcterms_publisher,Publisher
+dcterms_is_part_of,Relation
+dc_right,Rights
+dcterms_rights_holder,Rights Holder
+dcterms_provenance,Source
+dcterms_subject,Subject
+dlg_subject_personal,Subject Personal
+dcterms_title,Title
+dcterms_type,Type
+dcterms_temporal,Temporal Coverage
