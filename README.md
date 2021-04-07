@@ -1,3 +1,6 @@
+# Purpose of this fork
+This is for testing purposes for deciding if we can update it to fit a new use case.
+
 This program was created to be an intermediate step to pull item(s) from the [Digital Library of Georgia's](https://dlg.usg.edu) (DLG) API and compile it into a CSV file. This script is specifically used to import the CSV with the CSVImport plugin. Please take a look at the word document `DLG_Omeka_API_Pipeline.pdf` because it explains the entire pipeline. That should give you a good feel for the task this script completes. This allows you to have the data for each item but not have to store each item on your own. You will be pulling these from DLG. 
 
 
