@@ -1,2 +1,5 @@
 # PyCharm files
 .idea/
+
+# Files for testing
+test_files/
