@@ -19,7 +19,7 @@ def display_gui(message_text):
     # TODO: can a field be required? Right now lets you submit them blank.
     #     https://pysimplegui.readthedocs.io/en/latest/cookbook/#recipe-input-validation
     # TODO: format message text so it is more visible
-    layout = [[sg.Text(message_text)],
+    layout = [[sg.Text(message_text, text_color="yellow")],
               [sg.Text('Path to CSV with DLG URLs'), sg.Input(key="input_csv"), sg.FileBrowse()],
               [sg.Text('Folder to save output'), sg.Input(key="output_location"), sg.FolderBrowse()],
               [sg.Text('Name for the output CSV'), sg.Input(key="output_name")],
@@ -34,8 +34,8 @@ def display_gui(message_text):
 
 # Gets the script argument values from the user, validates the values, and reformats the information.
 # Continues giving the user the GUI and processing the input until all values are valid.
-# TODO: any way to give an error message within the GUI?
 # TODO: this loop keeps the cancel button from working. Have to fill in the GUI right or click X on GUI to quit.
+#  I think it might be able to test event and break if it is cancel. Click x prints error to terminal so catch it?
 message = ""
 while True:
 
