@@ -29,18 +29,20 @@ def display_gui(message_text):
     event, values = window.read()
     window.close()
 
-    return values
+    return event, values
 
 
 # Gets the script argument values from the user, validates the values, and reformats the information.
 # Continues giving the user the GUI and processing the input until all values are valid.
-# TODO: this loop keeps the cancel button from working. Have to fill in the GUI right or click X on GUI to quit.
-#  I think it might be able to test event and break if it is cancel. Click x prints error to terminal so catch it?
 message = ""
 while True:
 
     # Displays a GUI to the user and gets input.
-    arguments = display_gui(message)
+    status, arguments = display_gui(message)
+
+    # If the user clicked cancel or the X on the GUI, endd the script.
+    if status in ("Cancel", None):
+        exit()
 
     # If the provided value for the URLs CSV is empty or is not a valid path, displays the GUI again.
     input_csv = arguments["input_csv"]
