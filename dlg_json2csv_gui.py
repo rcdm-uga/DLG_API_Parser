@@ -30,20 +30,39 @@ def display_gui():
     return values
 
 
-# Gets the script argument values from the user
-arguments = display_gui()
+# Gets the script argument values from the user, validates the values, and reformats the information.
+# Continues giving the user the GUI and processing the input until all values are valid.
+# TODO: any way to give an error message within the GUI?
+# TODO: this loop keeps the cancel button from working. Have to fill in the GUI right or click X on GUI to quit.
+while True:
 
-# Validates and reformats the information provided by the user.
+    # Displays a GUI to the user and gets input.
+    arguments = display_gui()
 
-# TODO: test this is a valid path and not empty.
-input_csv = arguments["input_csv"]
+    # If the provided value for the URLs CSV is empty or is not a valid path, displays the GUI again.
+    input_csv = arguments["input_csv"]
+    if input_csv == "" or not os.path.exists(input_csv):
+        continue
 
-output_file = arguments["output_name"]
-if not output_file.endswith(".csv"):
-    output_file = output_file + ".csv"
+    # If the provided value for the output folder is empty or is not a valid path, displays the GUI again.
+    output_location = arguments["output_location"]
+    if output_location == "" or not os.path.exists(output_location):
+        continue
 
-# TODO: test output_location is a valid path and neither are empty.
-output_csv = os.path.join(arguments["output_location"], output_file)
+    # If the provided value for the output CSV name is empty, displays the GUI again.
+    output_file = arguments["output_name"]
+    if output_file == "":
+        continue
+
+    # Adds file extension to the end of the provided file name if it is not already present.
+    if not output_file.endswith(".csv"):
+        output_file = output_file + ".csv"
+
+    # Creates the path for the script output CSV using the provided values for the output location and file name.
+    output_csv = os.path.join(output_location, output_file)
+
+    # If all values are valid, quits the loop.
+    break
 
 # Runs the dlg_json2csv.py script with the user-provided information as the arguments.
 subprocess.run(f'python dlg_json2csv.py --input "{input_csv}" --output "{output_csv}"', shell=True)
