@@ -5,11 +5,13 @@
 
 import os
 import PySimpleGUI as sg
+import subprocess
 
 sg.theme("DarkTeal6")
 
 # TODO: give a default value for the output file name?
-# TODO: can a field be required? Right now lets you submit them blank. https://pysimplegui.readthedocs.io/en/latest/cookbook/#recipe-input-validation
+# TODO: can a field be required? Right now lets you submit them blank.
+#     https://pysimplegui.readthedocs.io/en/latest/cookbook/#recipe-input-validation
 layout = [[sg.Text('Path to CSV to DLG URLs'), sg.Input(key="input_csv"), sg.FileBrowse()],
           [sg.Text('Folder to save output'), sg.Input(key="output_location"), sg.FolderBrowse()],
           [sg.Text('Name for the output CSV'), sg.Input(key="output_name")],
@@ -28,5 +30,7 @@ if not output_file.endswith(".csv"):
 # TODO: at least for printing, the slashes in the URL are going both directions.
 output_csv = os.path.join(values["output_location"], output_file)
 
-print(input_csv)
-print(output_csv)
+# print(input_csv)
+# print(output_csv)
+
+subprocess.run(f'python dlg_json2csv.py --input "{input_csv}" --output "{output_csv}"', shell=True)
