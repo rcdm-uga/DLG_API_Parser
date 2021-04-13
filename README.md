@@ -1,5 +1,5 @@
 # Purpose of this fork
-This is for testing purposes for deciding if we can update it to fit a new use case.
+This is for testing purposes for deciding if we can update it to fit a new use case, including adding a GUI for easier user experience.
 
 
 # Original README
