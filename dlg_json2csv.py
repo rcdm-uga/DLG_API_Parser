@@ -48,44 +48,37 @@ def dlg_json2list(url_list):
         # If the URL is a search query, then we need to grab every item on every page.
         else:
             total_pages = json_dict['response']['pages']['total_pages']
-            current_page = json_dict['response']['pages']['current_page']
-            next_page = json_dict['response']['pages']['next_page']
 
-            # This loop will add each dictionary to the list and the prepare the next URL for the next iteration.
-            while True:
+            # Saves the results from the first page of the API call to the list.
+            for dict in json_dict['response']['docs']:
+                list_json.append(dict)
 
-                for dict in json_dict['response']['docs']:
-                    list_json.append(dict)
+            # If there are multiple pages, calculates the api_url for all the other pages and adds them to the list.
+            # Stops when the total number of pages is reached.
+            if total_pages > 1:
 
-                next_page_str = 'page=' + str(next_page)
+                # Range produces a sequence of numbers from 2 - last page number.
+                for page in range(2, total_pages+1):
 
-                # Changing the page number in the search results.
-                if type(re.search('page=\d+', api_url)) == re.Match:
-                    api_url = re.sub('page=\d+', next_page_str, api_url)
-                else:
-                    # Should only be entered the first iteration, the remaining links should already contain
-                    # 'page=\d' from previous iteration.
-                    next_page_str = '?' + next_page_str + '&'
-                    api_url = re.sub('\?', next_page_str, api_url)
+                    # Create the api_url for the next page.
+                    page_str = 'page=' + str(page)
+                    if type(re.search('page=\d+', api_url)) == re.Match:
+                        api_url = re.sub('page=\d+', page_str, api_url)
+                    else:
+                        # For the first iteration, which doesn't have 'page=\d' yet.
+                        page_str = '?' + page_str + '&'
+                        api_url = re.sub('\?', page_str, api_url)
 
-                # Grabbing the response and JSON.
-                try:
-                    response = requests.get(api_url)
-                    json_dict = response.json()
-                except:
-                    print('Something happened on page {} of this URL: {}'.format(next_page + 1,
-                                                                                 re.sub('\.json', '', api_url)))
+                    # Grabbing the response and JSON for the new api_url.
+                    try:
+                        response = requests.get(api_url)
+                        json_dict = response.json()
+                    except:
+                        print('Something happened on page {} of this URL: {}'.format(page, api_url))
 
-                # Updating variables.
-                current_page = json_dict['response']['pages']['current_page']
-                next_page = json_dict['response']['pages']['next_page']
-
-                # This is the condition that will end the while loop. So once current_page is the same at
-                # total_pages, grab the last amount of dictionaries and break the loop.
-                if current_page == total_pages:
+                    # Saves the response to the list.
                     for dict in json_dict['response']['docs']:
                         list_json.append(dict)
-                    break
 
     # Error Check. list_json should have 1 or more items inside. Otherwise exit.
     if len(list_json) < 1:
