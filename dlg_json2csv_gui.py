@@ -16,16 +16,12 @@ def display_gui(message_text):
 
     sg.theme("DarkTeal6")
 
-    # TODO: can a field be required? Right now lets you submit them blank.
-    #     https://pysimplegui.readthedocs.io/en/latest/cookbook/#recipe-input-validation
-    # TODO: format message text so it is more visible
     layout = [[sg.Text(message_text, text_color="yellow")],
               [sg.Text('Path to CSV with DLG URLs'), sg.Input(key="input_csv"), sg.FileBrowse()],
               [sg.Text('Folder to save output'), sg.Input(key="output_location"), sg.FolderBrowse()],
               [sg.Text('Name for the output CSV'), sg.Input(key="output_name")],
               [sg.Text()],
-              [sg.Text("Optional information. Only enter if not using the default values.")],
-              [sg.Text("Encoding, if not UTF-8"), sg.Input(key="encoding")],
+              [sg.Text("Optional information. Only enter if not using the default value.")],
               [sg.Text("Mapping, if not DLG_Mapping.csv"), sg.Input(key="map"), sg.FileBrowse()],
               [sg.Submit(), sg.Cancel()]]
 
@@ -90,10 +86,8 @@ while True:
     break
 
 # Runs the dlg_json2csv.py script with the user-provided information as the arguments.
-# Builds the script command by starting with the required values and then adding the optional values if provided.
+# Builds the script command by starting with the required values and then adding the optional value if provided.
 script_command = f'python dlg_json2csv.py --input "{input_csv}" --output "{output_csv}"'
-if not arguments["encoding"] == "":
-    script_command += f' --encode {arguments["encoding"]}'
 if not arguments["map"] == "":
     script_command += f' --mapping {arguments["map"]}'
 subprocess.run(script_command, shell=True)
