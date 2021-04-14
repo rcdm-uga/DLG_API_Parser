@@ -23,6 +23,10 @@ def display_gui(message_text):
               [sg.Text('Path to CSV with DLG URLs'), sg.Input(key="input_csv"), sg.FileBrowse()],
               [sg.Text('Folder to save output'), sg.Input(key="output_location"), sg.FolderBrowse()],
               [sg.Text('Name for the output CSV'), sg.Input(key="output_name")],
+              [sg.Text()],
+              [sg.Text("Optional information. Only enter if not using the default values.")],
+              [sg.Text("Encoding, if not UTF-8"), sg.Input(key="encoding")],
+              [sg.Text("Mapping, if not DLG_Mapping.csv"), sg.Input(key="map"), sg.FileBrowse()],
               [sg.Submit(), sg.Cancel()]]
 
     window = sg.Window("Make an Omeka CSV from DLG JSON", layout)
@@ -34,13 +38,15 @@ def display_gui(message_text):
 
 # Gets the script argument values from the user, validates the values, and reformats the information.
 # Continues giving the user the GUI and processing the input until all values are valid.
+# TODO: check all the values before giving the GUI again?
+# TODO: merge this error checking better with argparse in dlg_json2csv.py or replace it.
 message = ""
 while True:
 
     # Displays a GUI to the user and gets input.
     status, arguments = display_gui(message)
 
-    # If the user clicked cancel or the X on the GUI, endd the script.
+    # If the user clicked cancel or the X on the GUI, ends the script.
     if status in ("Cancel", None):
         exit()
 
@@ -75,8 +81,19 @@ while True:
     # Creates the path for the script output CSV using the provided values for the output location and file name.
     output_csv = os.path.join(output_location, output_file)
 
+    # If the provided value for the mapping file (which is option) is not a valid path, displays the GUI again.
+    if not arguments["map"] == "" and not os.path.exists(arguments["map"]):
+        message = "Please try again. The path to the mapping CSV was not a valid path."
+        continue
+
     # If all values are valid, quits the loop.
     break
 
 # Runs the dlg_json2csv.py script with the user-provided information as the arguments.
-subprocess.run(f'python dlg_json2csv.py --input "{input_csv}" --output "{output_csv}"', shell=True)
+# Builds the script command by starting with the required values and then adding the optional values if provided.
+script_command = f'python dlg_json2csv.py --input "{input_csv}" --output "{output_csv}"'
+if not arguments["encoding"] == "":
+    script_command += f' --encode {arguments["encoding"]}'
+if not arguments["map"] == "":
+    script_command += f' --mapping {arguments["map"]}'
+subprocess.run(script_command, shell=True)
