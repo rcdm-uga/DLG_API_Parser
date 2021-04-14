@@ -1,5 +1,14 @@
 # Purpose of this fork
-This is for testing purposes for deciding if we can update it to fit a new use case, including adding a GUI for easier user experience.
+This is for testing purposes for deciding if we can update it to fit a new use case, including adding a GUI for easier user experience. To test with the GUI:
+
+* Run dlg_json2csv_gui.py with no arguments.
+* In the GUI, enter the following:
+   * Path to CSV with DLG URLs = sample_urls.txt
+   * Folder to save output = any location on your computer
+   * Name for the output CSV = file name of your choice. If you do not include a .csv extension, the script will add it.
+   * Leave encoding and mapping blank.
+
+To see error handling with the GUI, leave any of the first three boxes blank or type "fake" into any of the boxes with "Browse" buttons.
 
 
 # Original README
