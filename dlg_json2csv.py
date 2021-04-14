@@ -29,12 +29,11 @@ def dlg_json2list(url_list):
             # implemented reading the urls from the file instead of the command line, majority of the potential
             # errors have been alleviated.
             response = requests.get(api_url)
+            json_dict = response.json()
         except:
             print('Something went wrong with the url')
             print('{} is the url you are trying to parse.'.format(url))
             continue
-
-        json_dict = response.json()
 
         # Saving the response JSON to json_list.
         if not is_search_result:
@@ -69,6 +68,7 @@ def dlg_json2list(url_list):
                         json_dict = response.json()
                     except:
                         print('Something happened on page {} of this URL: {}'.format(page, api_url))
+                        continue
 
                     # Saves the response to the list.
                     for item in json_dict['response']['docs']:
@@ -99,10 +99,10 @@ def dlg_json2list(url_list):
                     thumbnail_url = 'https://dlg.galileo.usg.edu/'
                     try:
                         repo_id, collection_id, item_id = item['id'].split('_', 2)
+                        thumbnail_url += repo_id + '/' + collection_id + '/do-th:' + item_id
                     except:
-                        print(item['id'])
-                    thumbnail_url += repo_id + '/' + collection_id + '/do-th:' + item_id
-
+                        print("Could not parse item_id for thumbail_url:", item['id'])
+                        continue
                     # Now grabbing the redirected URL.
                     item[key] = requests.get(thumbnail_url).url
                 else:
@@ -110,7 +110,7 @@ def dlg_json2list(url_list):
                     try:
                         item[key] = requests.get(item[key]).url
                     except:
-                        print(item[key])
+                        print("Could not get redirected item:", item[key])
 
     return json_list
 
