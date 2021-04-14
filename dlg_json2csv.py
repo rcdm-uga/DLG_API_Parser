@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def dlg_json2list(url_list):
-    list_json = []
+    json_list = []
 
     for url in url_list:
 
@@ -15,16 +15,16 @@ def dlg_json2list(url_list):
         is_api_url = type(re.search('.json', url)) == re.Match
 
         # Checking to see if URL is a search result or a single item.
-        is_search_result = type(re.search('\?', url)) == re.Match
+        is_search_result = type(re.search(r'\?', url)) == re.Match
         url_old = url
 
         if not is_api_url:
             # If this is reached, then '.json' is not present and we need to add it to the URL to grab API response.
             if is_search_result:
-                api_url = re.sub('\?', '.json?', url)
+                api_url = re.sub(r'\?', '.json?', url)
 
             else:
-                api_url = re.sub('$', '.json', url)
+                api_url = re.sub(r'$', '.json', url)
         else:
             # If this is reached, then the URL is already the API response.
             api_url = url
@@ -35,7 +35,6 @@ def dlg_json2list(url_list):
             # implemented reading the urls from the file instead of the command line, majority of the potential
             # errors have been alleviated.
             response = requests.get(api_url)
-            json_dict = response.json()
         except:
             print('Something went wrong with the url')
             print('{} is the url you are trying to parse.'.format(url_old))
@@ -44,30 +43,30 @@ def dlg_json2list(url_list):
         json_dict = response.json()
 
         if not is_search_result:
-            list_json.append(json_dict['response']['document'])
+            json_list.append(json_dict['response']['document'])
         # If the URL is a search query, then we need to grab every item on every page.
         else:
             total_pages = json_dict['response']['pages']['total_pages']
 
             # Saves the results from the first page of the API call to the list.
-            for dict in json_dict['response']['docs']:
-                list_json.append(dict)
+            for item in json_dict['response']['docs']:
+                json_list.append(item)
 
             # If there are multiple pages, calculates the api_url for all the other pages and adds them to the list.
             # Stops when the total number of pages is reached.
             if total_pages > 1:
 
                 # Range produces a sequence of numbers from 2 - last page number.
-                for page in range(2, total_pages+1):
+                for page in range(2, total_pages + 1):
 
                     # Create the api_url for the next page.
                     page_str = 'page=' + str(page)
-                    if type(re.search('page=\d+', api_url)) == re.Match:
-                        api_url = re.sub('page=\d+', page_str, api_url)
+                    if type(re.search(r'page=\d+', api_url)) == re.Match:
+                        api_url = re.sub(r'page=\d+', page_str, api_url)
                     else:
                         # For the first iteration, which doesn't have 'page=\d' yet.
                         page_str = '?' + page_str + '&'
-                        api_url = re.sub('\?', page_str, api_url)
+                        api_url = re.sub(r'\?', page_str, api_url)
 
                     # Grabbing the response and JSON for the new api_url.
                     try:
@@ -77,18 +76,18 @@ def dlg_json2list(url_list):
                         print('Something happened on page {} of this URL: {}'.format(page, api_url))
 
                     # Saves the response to the list.
-                    for dict in json_dict['response']['docs']:
-                        list_json.append(dict)
+                    for item in json_dict['response']['docs']:
+                        json_list.append(item)
 
-    # Error Check. list_json should have 1 or more items inside. Otherwise exit.
-    if len(list_json) < 1:
+    # Error Check. json_list should have 1 or more items inside. Otherwise exit.
+    if len(json_list) < 1:
         print('Was not able to grab any of the URLs. Please check them.')
         sys.exit()
 
-    '''This loop with iterate through each item of list_json to convert each item into a string so when creating the 
+    '''This loop with iterate through each item of json_list to convert each item into a string so when creating the 
     CSV, the excess quotation marks and brackets will go away. Plus we will handle the redirecting URLs and copyright 
     issues with replacing the item with the thumbnails. '''
-    for item in list_json:
+    for item in json_list:
         for key in item.keys():
 
             # Changing the list into one big string.
@@ -101,13 +100,13 @@ def dlg_json2list(url_list):
             # Changing the item URL.
             if key == 'edm_is_shown_by':
                 # Thumbnails.
-                if item[key] == None:
+                if item[key] is None:
                     thumbnail_url = 'https://dlg.galileo.usg.edu/'
                     try:
-                        repoID, collectionID, itemID = item['id'].split('_', 2)
+                        repo_id, collection_id, item_id = item['id'].split('_', 2)
                     except:
                         print(item['id'])
-                    thumbnail_url += repoID + '/' + collectionID + '/do-th:' + itemID
+                    thumbnail_url += repo_id + '/' + collection_id + '/do-th:' + item_id
 
                     # Now grabbing the redirected URL.
                     item[key] = requests.get(thumbnail_url).url
@@ -118,7 +117,7 @@ def dlg_json2list(url_list):
                     except:
                         print(item[key])
 
-    return list_json
+    return json_list
 
 
 if __name__ == '__main__':
@@ -139,20 +138,20 @@ if __name__ == '__main__':
                         Default: DLG_Mapping.csv')
     args = parser.parse_args()
 
-    url_file = args.input   # The file of URLs from the DLG.
+    url_file = args.input  # The file of URLs from the DLG.
     csv_name = args.output  # The name of the CSV output file.
     encoding = args.encode  # File encoding.
     dlg_mapping = args.dlg  # What to map the DLG's field names to.
 
     # Grabbing all of the URLs in the file to then be parsed.
-    url_list = []
+    urls = []
     with open(url_file, 'r') as dlg_urls:
         for line in dlg_urls:
-            url_list.append(line.strip())
+            urls.append(line.strip())
 
     # Grabbing the complete list of JSONs from the provided URLs and making a dataframe.
-    list_json = dlg_json2list(url_list)
-    df = pd.DataFrame.from_dict(list_json)
+    jsons = dlg_json2list(urls)
+    df = pd.DataFrame.from_dict(jsons)
 
     # Initializing the DLG Mapping dict.
     new_column_name = {}
