@@ -11,22 +11,16 @@ def dlg_json2list(url_list):
 
     for url in url_list:
 
-        # Checking for .json already in URL before we assume it is not there.
+        # Creates an API URL from the provided URL. Adds .json if not present, which goes in a different location
+        # depending on if the provided URL is from a search or for a single item.
         is_api_url = type(re.search('.json', url)) == re.Match
-
-        # Checking to see if URL is a search result or a single item.
         is_search_result = type(re.search(r'\?', url)) == re.Match
-        url_old = url
-
         if not is_api_url:
-            # If this is reached, then '.json' is not present and we need to add it to the URL to grab API response.
             if is_search_result:
                 api_url = re.sub(r'\?', '.json?', url)
-
             else:
                 api_url = re.sub(r'$', '.json', url)
         else:
-            # If this is reached, then the URL is already the API response.
             api_url = url
 
         # Grabbing the response JSON.
@@ -37,11 +31,12 @@ def dlg_json2list(url_list):
             response = requests.get(api_url)
         except:
             print('Something went wrong with the url')
-            print('{} is the url you are trying to parse.'.format(url_old))
+            print('{} is the url you are trying to parse.'.format(url))
             continue
 
         json_dict = response.json()
 
+        # Saving the response JSON to json_list.
         if not is_search_result:
             json_list.append(json_dict['response']['document'])
         # If the URL is a search query, then we need to grab every item on every page.
