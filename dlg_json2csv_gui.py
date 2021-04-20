@@ -172,7 +172,7 @@ layout_two = [[sg.Input(key="input_csv"), sg.FileBrowse()],
               [sg.Input(key="output_name")]]
 
 layout_three = [[sg.Text("Mapping", font=("roboto", 12)),
-                 sg.Input(key="map"), sg.FileBrowse()]]
+                 sg.Input(default_text="DLG_Mapping.csv", key="map"), sg.FileBrowse()]]
 
 layout = [[sg.Column(layout_one), sg.Column(layout_two)],
           [sg.Frame("Optional", layout_three, font=("roboto", 15))]]
@@ -196,9 +196,9 @@ while True:
                 # Could do something fancy to change color of boxes with errors OR clear values if errors by updating layout.
                 # TODO: work with mapping default.
                 if override == "Yes":
-                    make_csv(values["input_csv"], output_csv, "DLG_Mapping.csv")
+                    make_csv(values["input_csv"], output_csv, values["map"])
             else:
-                make_csv(values["input_csv"], output_csv, "DLG_Mapping.csv")
+                make_csv(values["input_csv"], output_csv, values["map"])
     # User closes the GUI
     if event in ("Cancel", None):
         exit()
