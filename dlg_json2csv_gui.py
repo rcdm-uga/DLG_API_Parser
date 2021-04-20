@@ -28,15 +28,29 @@ window = sg.Window("Make an Omeka CSV from DLG JSON", layout)
 while True:
     event, values = window.read()
     if event == "submit":
+        output_csv = os.path.join(values["output_location"], values["output_name"])
         # Error testing
+        # TODO: error check if output csv already exists, do you want to override
         if values["input_csv"] == "":
             sg.Popup("CSV can't be blank")
         elif values["output_name"] == "":
             sg.Popup("Output name can't be blank")
         # Run script
         else:
-            output_csv = os.path.join(values["output_location"], values["output_name"])
-            subprocess.run(f'python dlg_json2csv.py --input "{values["input_csv"]}" --output "{output_csv}"', shell=True)
+            if os.path.exists(output_csv):
+                override = sg.PopupYesNo("Do you want to replace existing csv?")
+                # GUI remains open for data input if override is no.
+                # Could do something fancy to change color of boxes with errors OR clear values if errors by updating layout.
+                if override == "Yes":
+                    script_command = f'python dlg_json2csv.py --input "{values["input_csv"]}" --output "{output_csv}"'
+                    if not values["map"] == "":
+                        script_command += f' --mapping {values["map"]}'
+                    subprocess.run(script_command, shell=True)
+            else:
+                script_command = f'python dlg_json2csv.py --input "{values["input_csv"]}" --output "{output_csv}"'
+                if not values["map"] == "":
+                    script_command += f' --mapping {values["map"]}'
+                subprocess.run(script_command, shell=True)
     # User closes the GUI
     if event in ("Cancel", None):
         exit()
