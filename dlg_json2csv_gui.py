@@ -10,18 +10,28 @@ import os
 import PySimpleGUI as sg
 import subprocess
 
-
 """Makes and displays a window for users to provide the input and output csv."""
 
 sg.theme("DarkTeal6")
 
-layout = [[sg.Text('Path to CSV with DLG URLs'), sg.Input(key="input_csv"), sg.FileBrowse()],
-          [sg.Text('Folder to save output'), sg.Input(key="output_location"), sg.FolderBrowse()],
-          [sg.Text('Name for the output CSV'), sg.Input(key="output_name")],
-          [sg.Text()],
-          [sg.Text("Optional information. Only enter if not using the default value.")],
-          [sg.Text("Mapping, if not DLG_Mapping.csv"), sg.Input(key="map"), sg.FileBrowse()],
-          [sg.Submit(key="submit"), sg.Cancel()]]
+layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 11))],
+              [sg.Text('Folder to save output', font=("roboto", 11))],
+              [sg.Text('Name for the output CSV', font=("roboto", 11))],
+              [sg.Text()],
+              [sg.Submit(key="submit"), sg.Cancel()]]
+
+layout_two = [[sg.Input(key="input_csv"), sg.FileBrowse()],
+              [sg.Input(key="output_location"), sg.FolderBrowse()],
+              [sg.Input(key="output_name")]]
+
+layout_three = [[sg.Text("Mapping, if not DLG_Mapping.csv"), sg.Input(key="map"), sg.FileBrowse()]]
+
+# layout_four = [[sg.Input(key="map"), sg.FileBrowse()]]
+
+# layout_frame = [sg.Column(layout_three), sg.Column(layout_four)]
+
+layout = [[sg.Column(layout_one), sg.Column(layout_two)],
+          [sg.Frame("OPTIONAL", layout_three, font=("roboto", 15))]]
 
 window = sg.Window("Make an Omeka CSV from DLG JSON", layout)
 
@@ -58,7 +68,6 @@ while True:
 # Not sure if we need this. Right now user closes GUI.
 # Put in code where want it to auto-close, if we do, or PSG recommends.
 # window.close()
-
 
 
 # # Gets the script argument values from the user, validates the values, and reformats the information.
