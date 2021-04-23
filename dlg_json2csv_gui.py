@@ -180,6 +180,7 @@ window = sg.Window("DLG API Parser: Make a CSV from DLG Metadata", layout)
 
 # Keeps the GUI open until the user quits the program. Receives user input, verifies the input,
 # and when all input is correct runs the program.
+# TODO: add a "reset" button to get the GUI back to original values if their next input is completely different.
 while True:
 
     # Gets the user input data and saves the input values to their own variables for easier referencing in the script.
@@ -190,19 +191,31 @@ while True:
     # TODO: change formatting on boxes with errors?
     if event == "submit":
 
-        # Makes a variable for the full path to the CSV for the output from two user inputs.
+        # Makes a variable for the full path to the CSV for the output from two user inputs,
+        # including adding a ".csv" file extension if output_name does not already have one.
+        if not values["output_name"].endswith(".csv"):
+            values["output_name"] = values["output_name"] + ".csv"
         output_csv = os.path.join(values["output_folder"], values["output_name"])
 
-        # Error testing on all of the user inputs.
+        # Error testing on all of the user inputs. Required fields cannot be empty and paths must be valid.
+        # Only runs the script if all user inputs are valid.
         if values["input_csv"] == "":
-            sg.Popup("Input CSV can't be blank")
+            sg.Popup("Input CSV can't be blank.")
+        elif not os.path.exists(values["input_csv"]):
+            sg.Popup("Input CSV path is not correct.")
+        elif values["output_folder"] == "":
+            sg.Popup("Output folder cannot be blank.")
+        elif not os.path.exists(values["output_folder"]):
+            sg.Popup("Output folder path is not correct.")
         elif values["output_name"] == "":
-            sg.Popup("Output name can't be blank")
-
-        # Run the script if all user inputs are valid, after confirming if the output CSV already exists.
-        # If the CSV for the script output already exists, prompt the user to decide if it should be overwritten.
-        # If the user indicates yes, the script is run. Otherwise, the user can correct the input and resubmit.
+            sg.Popup("Output name can't be blank.")
+        elif values["mapping_csv"] == "":
+            sg.Popup("Mapping CSV can't be blank. Use DLG_Mapping.csv for the default.")
+        elif not os.path.exists(values["mapping_csv"]):
+            sg.Popup("Mapping CSV path is not correct.")
         else:
+            # If the CSV for the script output already exists, prompt the user to decide if it should be overwritten.
+            # If the user indicates yes, the script is run. Otherwise, the user can correct the input and resubmit.
             if os.path.exists(output_csv):
                 override = sg.PopupYesNo("Do you want to replace existing csv?")
                 if override == "Yes":
@@ -213,28 +226,3 @@ while True:
     # If the user clicked cancel or the X on the GUI, quites the script.
     if event in ("Cancel", None):
         exit()
-
-# while True:
-#     # If the provided value for the URLs CSV is not a valid path, displays the GUI again.
-#     input_csv = arguments["input_csv"]
-#     elif not os.path.exists(input_csv):
-#         message = "Please try again. The path to the CSV with the DLG URLs was not a valid path."
-#         continue
-#
-#     # If the provided value for the output folder is empty or is not a valid path, displays the GUI again.
-#     output_location = arguments["output_location"]
-#     if output_location == "":
-#         message = "Please try again. The folder to save the output to cannot be blank."
-#         continue
-#     elif not os.path.exists(output_location):
-#         message = "Please try again. The folder to save the output to was not a valid path."
-#         continue
-#
-#     # Adds file extension to the end of the provided file name if it is not already present.
-#     if not output_file.endswith(".csv"):
-#         output_file = output_file + ".csv"
-#
-#     # If the provided value for the mapping file (which is option) is not a valid path, displays the GUI again.
-#     if not arguments["map"] == "" and not os.path.exists(arguments["map"]):
-#         message = "Please try again. The path to the mapping CSV was not a valid path."
-#         continue
