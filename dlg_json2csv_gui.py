@@ -1,10 +1,7 @@
 """
-GUI that gets the required script arguments (path to input CSV, place to save output CSV, name for output CSV)
-and then runs the script to create the CSV so users don't need to interact with the command line.
-
-Probably will actually include it in the dlg_json2csv.py document itself, but experimenting with it separately.
+Parses JSON data from the DLG API into a CSV.
+A GUI is used to run the scriptso users don't need to interact with the command line.
 """
-# TODO: need fields for optional encode and mapping
 
 import csv
 import os
@@ -12,11 +9,11 @@ import pandas as pd
 import PySimpleGUI as sg
 import re
 import requests
-import subprocess
 import sys
 
 
 def dlg_json2list(url_list):
+    """Gets the JSON from th DLG API for every value in the url_list and results it as a list."""
     json_list = []
 
     for url in url_list:
@@ -127,6 +124,7 @@ def dlg_json2list(url_list):
 
 
 def make_csv(url_file, csv_name, dlg_mapping='DLG_Mapping.csv'):
+    """Creates a CSV of data from the DLG API for all specified items. """
 
     # Grabbing all of the URLs in the file to then be parsed.
     urls = []
@@ -157,7 +155,8 @@ def make_csv(url_file, csv_name, dlg_mapping='DLG_Mapping.csv'):
     df.to_csv(csv_name, index=False)
 
 
-"""Makes and displays a window for users to provide the input and output csv."""
+# Defines a GUI for users to provide the input needed for this script and
+# to receive messages about errors to their inputs and the script progress.
 
 sg.theme("DarkTeal6")
 
@@ -168,65 +167,56 @@ layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 12))],
               [sg.Submit(key="submit"), sg.Cancel()]]
 
 layout_two = [[sg.Input(key="input_csv"), sg.FileBrowse()],
-              [sg.Input(key="output_location"), sg.FolderBrowse()],
+              [sg.Input(key="output_folder"), sg.FolderBrowse()],
               [sg.Input(key="output_name")]]
 
 layout_three = [[sg.Text("Mapping", font=("roboto", 12)),
-                 sg.Input(default_text="DLG_Mapping.csv", key="map"), sg.FileBrowse()]]
+                 sg.Input(default_text="DLG_Mapping.csv", key="mapping_csv"), sg.FileBrowse()]]
 
 layout = [[sg.Column(layout_one), sg.Column(layout_two)],
           [sg.Frame("Optional", layout_three, font=("roboto", 15))]]
 
 window = sg.Window("DLG API Parser: Make a CSV from DLG Metadata", layout)
 
+# Keeps the GUI open until the user quits the program. Receives user input, verifies the input,
+# and when all input is correct runs the program.
 while True:
+
+    # Gets the user input data and saves the input values to their own variables for easier referencing in the script.
     event, values = window.read()
+
+    # If the user submitted values, tests they are correct. If not, errors are displayed. If yes, the script is run.
+    # TODO: test for all possible errors at once before displaying?
+    # TODO: change formatting on boxes with errors?
     if event == "submit":
-        output_csv = os.path.join(values["output_location"], values["output_name"])
-        # Error testing
+
+        # Makes a variable for the full path to the CSV for the output from two user inputs.
+        output_csv = os.path.join(values["output_folder"], values["output_name"])
+
+        # Error testing on all of the user inputs.
         if values["input_csv"] == "":
-            sg.Popup("CSV can't be blank")
+            sg.Popup("Input CSV can't be blank")
         elif values["output_name"] == "":
             sg.Popup("Output name can't be blank")
-        # Run script
+
+        # Run the script if all user inputs are valid, after confirming if the output CSV already exists.
+        # If the CSV for the script output already exists, prompt the user to decide if it should be overwritten.
+        # If the user indicates yes, the script is run. Otherwise, the user can correct the input and resubmit.
         else:
             if os.path.exists(output_csv):
                 override = sg.PopupYesNo("Do you want to replace existing csv?")
-                # GUI remains open for data input if override is no.
-                # Could do something fancy to change color of boxes with errors OR clear values if errors by updating layout.
-                # TODO: work with mapping default.
                 if override == "Yes":
-                    make_csv(values["input_csv"], output_csv, values["map"])
+                    make_csv(values["input_csv"], output_csv, values["mapping_csv"])
             else:
-                make_csv(values["input_csv"], output_csv, values["map"])
-    # User closes the GUI
+                make_csv(values["input_csv"], output_csv, values["mapping_csv"])
+
+    # If the user clicked cancel or the X on the GUI, quites the script.
     if event in ("Cancel", None):
         exit()
 
-# Not sure if we need this. Right now user closes GUI.
-# Put in code where want it to auto-close, if we do, or PSG recommends.
-# window.close()
-
-
-# # Gets the script argument values from the user, validates the values, and reformats the information.
-# # Continues giving the user the GUI and processing the input until all values are valid.
-# # TODO: check all the values before giving the GUI again?
-# # TODO: merge this error checking better with argparse in dlg_json2csv.py or replace it.
-# message = ""
 # while True:
-#
-#     # Displays a GUI to the user and gets input.
-#     status, arguments = display_gui(message)
-#
-#     # If the user clicked cancel or the X on the GUI, ends the script.
-#     if status in ("Cancel", None):
-#         exit()
-#
-#     # If the provided value for the URLs CSV is empty or is not a valid path, displays the GUI again.
+#     # If the provided value for the URLs CSV is not a valid path, displays the GUI again.
 #     input_csv = arguments["input_csv"]
-#     if input_csv == "":
-#         message = "Please try again. The path to the CSV with the DLG URLs cannot be blank."
-#         continue
 #     elif not os.path.exists(input_csv):
 #         message = "Please try again. The path to the CSV with the DLG URLs was not a valid path."
 #         continue
@@ -240,30 +230,11 @@ while True:
 #         message = "Please try again. The folder to save the output to was not a valid path."
 #         continue
 #
-#     # If the provided value for the output CSV name is empty, displays the GUI again.
-#     output_file = arguments["output_name"]
-#     if output_file == "":
-#         message = "Please try again. The name for the output CSV cannot be blank."
-#         continue
-#
 #     # Adds file extension to the end of the provided file name if it is not already present.
 #     if not output_file.endswith(".csv"):
 #         output_file = output_file + ".csv"
-#
-#     # Creates the path for the script output CSV using the provided values for the output location and file name.
-#     output_csv = os.path.join(output_location, output_file)
 #
 #     # If the provided value for the mapping file (which is option) is not a valid path, displays the GUI again.
 #     if not arguments["map"] == "" and not os.path.exists(arguments["map"]):
 #         message = "Please try again. The path to the mapping CSV was not a valid path."
 #         continue
-#
-#     # If all values are valid, quits the loop.
-#     break
-
-# # Runs the dlg_json2csv.py script with the user-provided information as the arguments.
-# # Builds the script command by starting with the required values and then adding the optional value if provided.
-# script_command = f'python dlg_json2csv.py --input "{input_csv}" --output "{output_csv}"'
-# if not arguments["map"] == "":
-#     script_command += f' --mapping {arguments["map"]}'
-# subprocess.run(script_command, shell=True)
