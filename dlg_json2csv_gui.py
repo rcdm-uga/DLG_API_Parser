@@ -233,9 +233,9 @@ while True:
 
         # If some of the user inputs were not correct, creates a pop up box with the errors.
         # The user may then edit the provided input and resubmit.
-        # TODO: format error message as multi-line text.
         else:
-            sg.Popup(errors)
+            error_message = "\n".join(errors)
+            sg.Popup(error_message)
 
     # If the user clicked cancel or the X on the GUI, quites the script.
     if event in ("Cancel", None):
