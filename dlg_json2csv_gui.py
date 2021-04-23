@@ -1,6 +1,6 @@
 """
 Parses JSON data from the DLG API into a CSV.
-A GUI is used to run the scriptso users don't need to interact with the command line.
+A GUI is used to run the script so users don't need to interact with the command line.
 """
 
 import csv
@@ -12,8 +12,9 @@ import requests
 import sys
 
 
-def dlg_json2list(url_list):
-    """Gets the JSON from th DLG API for every value in the url_list and results it as a list."""
+def dlg_json2list(url_list, output_location):
+    """Gets the JSON from th DLG API for every value in the url_list and results it as a list.
+    Makes a log for details about any problems in the same folder as the output."""
     json_list = []
 
     for url in url_list:
@@ -38,8 +39,9 @@ def dlg_json2list(url_list):
             response = requests.get(api_url)
             json_dict = response.json()
         except:
-            print('Something went wrong with the url')
-            print('{} is the url you are trying to parse.'.format(url))
+            with open(f'{output_location}/error_log.txt', 'a') as log:
+                log.write('\n\nCould not get data from the DLG API for the following URL:')
+                log.write(url)
             continue
 
         # Saving the response JSON to json_list.
@@ -75,7 +77,9 @@ def dlg_json2list(url_list):
                         response = requests.get(api_url)
                         json_dict = response.json()
                     except:
-                        print('Something happened on page {} of this URL: {}'.format(page, api_url))
+                        with open(f'{output_location}/error_log.txt', 'a') as log:
+                            log.write('\n\nCould not get data from the DLG API for the following page:')
+                            log.write(f'Page: {page}, API URL: {api_url}')
                         continue
 
                     # Saves the response to the list.
@@ -84,7 +88,10 @@ def dlg_json2list(url_list):
 
     # Error Check. json_list should have 1 or more items inside. Otherwise exit.
     if len(json_list) < 1:
-        print('Was not able to grab any of the URLs. Please check them.')
+        with open(f'{output_location}/error_log.txt', 'a', ) as log:
+            log.write('\n\nCould not get any data from the DLG API for this request')
+        sg.Popup("Unable to get any data for the provided input. See error_log.txt in the output folder for more "
+                 "information.")
         sys.exit()
 
     '''This loop with iterate through each item of json_list to convert each item into a string so when creating the 
@@ -109,7 +116,8 @@ def dlg_json2list(url_list):
                         repo_id, collection_id, item_id = item['id'].split('_', 2)
                         thumbnail_url += repo_id + '/' + collection_id + '/do-th:' + item_id
                     except:
-                        print("Could not parse item_id for thumbnail_url:", item['id'])
+                        with open(f'{output_location}/error_log.txt', 'a') as log:
+                            log.write(f'\n\nCould not parse the item id for the thumbnail url: {item["id"]}')
                         continue
                     # Now grabbing the redirected URL.
                     item[key] = requests.get(thumbnail_url).url
@@ -118,12 +126,13 @@ def dlg_json2list(url_list):
                     try:
                         item[key] = requests.get(item[key]).url
                     except:
-                        print("Could not get redirected item:", item[key])
+                        with open(f'{output_location}/error_log.txt', 'a') as log:
+                            log.write(f'\n\nCould not get redirected item: {item[key]}')
 
     return json_list
 
 
-def make_csv(url_file, csv_name, dlg_mapping='DLG_Mapping.csv'):
+def make_csv(url_file, csv_name, dlg_mapping, output_location):
     """Creates a CSV of data from the DLG API for all specified items. """
 
     # Grabbing all of the URLs in the file to then be parsed.
@@ -133,7 +142,7 @@ def make_csv(url_file, csv_name, dlg_mapping='DLG_Mapping.csv'):
             urls.append(line.strip())
 
     # Grabbing the complete list of JSONs from the provided URLs and making a dataframe.
-    jsons = dlg_json2list(urls)
+    jsons = dlg_json2list(urls, output_location)
     df = pd.DataFrame.from_dict(jsons)
 
     # Initializing the DLG Mapping dict.
@@ -227,9 +236,9 @@ while True:
             if os.path.exists(output_csv):
                 override = sg.PopupYesNo("Do you want to replace the existing CSV?")
                 if override == "Yes":
-                    make_csv(values["input_csv"], output_csv, values["mapping_csv"])
+                    make_csv(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"])
             else:
-                make_csv(values["input_csv"], output_csv, values["mapping_csv"])
+                make_csv(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"])
 
         # If some of the user inputs were not correct, creates a pop up box with the errors.
         # The user may then edit the provided input and resubmit.
