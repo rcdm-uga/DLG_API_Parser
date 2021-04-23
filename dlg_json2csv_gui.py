@@ -154,6 +154,9 @@ def make_csv(url_file, csv_name, dlg_mapping='DLG_Mapping.csv'):
     df = df.sort_index(axis=1)
     df.to_csv(csv_name, index=False)
 
+    # Communicate script success to user.
+    sg.Popup("CSV has been created.")
+
 
 # Defines a GUI for users to provide the input needed for this script and
 # to receive messages about errors to their inputs and the script progress.
