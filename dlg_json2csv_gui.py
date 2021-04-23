@@ -187,41 +187,52 @@ while True:
     event, values = window.read()
 
     # If the user submitted values, tests they are correct. If not, errors are displayed. If yes, the script is run.
-    # TODO: test for all possible errors at once before displaying?
     # TODO: change formatting on boxes with errors?
     if event == "submit":
 
-        # Makes a variable for the full path to the CSV for the output from two user inputs,
-        # including adding a ".csv" file extension if output_name does not already have one.
-        if not values["output_name"].endswith(".csv"):
-            values["output_name"] = values["output_name"] + ".csv"
-        output_csv = os.path.join(values["output_folder"], values["output_name"])
-
         # Error testing on all of the user inputs. Required fields cannot be empty and paths must be valid.
-        # Only runs the script if all user inputs are valid.
+        # Errors are saved to a list so all values can be tested prior to notifying the user.
+        errors = []
         if values["input_csv"] == "":
-            sg.Popup("Input CSV can't be blank.")
-        elif not os.path.exists(values["input_csv"]):
-            sg.Popup("Input CSV path is not correct.")
-        elif values["output_folder"] == "":
-            sg.Popup("Output folder cannot be blank.")
-        elif not os.path.exists(values["output_folder"]):
-            sg.Popup("Output folder path is not correct.")
-        elif values["output_name"] == "":
-            sg.Popup("Output name can't be blank.")
-        elif values["mapping_csv"] == "":
-            sg.Popup("Mapping CSV can't be blank. Use DLG_Mapping.csv for the default.")
-        elif not os.path.exists(values["mapping_csv"]):
-            sg.Popup("Mapping CSV path is not correct.")
-        else:
+            errors.append("Input CSV can't be blank.")
+        if not os.path.exists(values["input_csv"]):
+            errors.append("Input CSV path is not correct.")
+        if values["output_folder"] == "":
+            errors.append("Output folder cannot be blank.")
+        if not os.path.exists(values["output_folder"]):
+            errors.append("Output folder path is not correct.")
+        if values["output_name"] == "":
+            errors.append("Output name can't be blank.")
+        if values["mapping_csv"] == "":
+            errors.append("Mapping CSV can't be blank. Use DLG_Mapping.csv for the default.")
+        if not os.path.exists(values["mapping_csv"]):
+            errors.append("Mapping CSV path is not correct.")
+
+        # If the user inputs are correct, verifies if the output CSV exists and runs the script if it does not
+        # OR if the user agrees to overwrite the existing CSV. If the user does not want to overwrite an existing CSV,
+        # no CSV is made and the user must resubmit the input.
+        if len(errors) == 0:
+
+            # Makes a variable for the full path to the CSV for the output from two user inputs,
+            # including adding a ".csv" file extension if output_name does not already have one.
+            if not values["output_name"].endswith(".csv"):
+                values["output_name"] = values["output_name"] + ".csv"
+            output_csv = os.path.join(values["output_folder"], values["output_name"])
+
             # If the CSV for the script output already exists, prompt the user to decide if it should be overwritten.
             # If the user indicates yes, the script is run. Otherwise, the user can correct the input and resubmit.
             if os.path.exists(output_csv):
-                override = sg.PopupYesNo("Do you want to replace existing csv?")
+                override = sg.PopupYesNo("Do you want to replace the existing CSV?")
                 if override == "Yes":
                     make_csv(values["input_csv"], output_csv, values["mapping_csv"])
             else:
                 make_csv(values["input_csv"], output_csv, values["mapping_csv"])
+
+        # If some of the user inputs were not correct, creates a pop up box with the errors.
+        # The user may then edit the provided input and resubmit.
+        # TODO: format error message as multi-line text.
+        else:
+            sg.Popup(errors)
 
     # If the user clicked cancel or the X on the GUI, quites the script.
     if event in ("Cancel", None):
