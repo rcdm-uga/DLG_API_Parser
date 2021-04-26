@@ -2,6 +2,7 @@
 Parses JSON data from the DLG API into a CSV.
 A GUI is used to run the script so users don't need to interact with the command line.
 """
+# TODO: should the user be notified of errors that don't quit the script?
 
 import csv
 import os
