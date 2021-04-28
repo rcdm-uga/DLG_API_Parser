@@ -59,7 +59,6 @@ def dlg_json2list(url_list):
             #every page. This entire else statement handles that.
 
             total_pages = json_dict['response']['pages']['total_pages']
-            print("Total pages:", total_pages)
 
             # Saves the results from the first page of the API call to the list.
             for item in json_dict['response']['docs']:
@@ -71,7 +70,7 @@ def dlg_json2list(url_list):
 
                 # Range produces a sequence of numbers from 2 - last page number.
                 for page in range(2, total_pages + 1):
-                    print("Starting page:", page)
+
                     # Create the api_url for the next page.
                     page_str = 'page=' + str(page)
                     if type(re.search(r'page=\d+', api_url)) == re.Match:
@@ -97,7 +96,6 @@ def dlg_json2list(url_list):
     if len(list_json) < 1:
         print('Was not able to grab any of the URLs. Please check them.')
         sys.exit()
-    print('done with initial api calls')
 
     '''
     This loop with iterate through each item of list_json to convert each
@@ -134,7 +132,6 @@ def dlg_json2list(url_list):
                         item[key] = requests.get(item[key]).url
                     except:
                         print(item[key])
-    print("done with thumbnail replacement")
     return list_json
 
 if __name__ == '__main__':
@@ -167,10 +164,8 @@ if __name__ == '__main__':
         for line in dlg_urls:
             url_list.append(line.strip())
 
-    print("starting api calls)")
     #Grabbing the complete list of jsons from the provided URLs
     list_json = dlg_json2list(url_list)
-    print("reformating in the dataframe")
     df = pd.DataFrame.from_dict(list_json)
 
     #Initalizing the DLG Mapping dict
@@ -186,7 +181,7 @@ if __name__ == '__main__':
     #Creating Columns to drop
     drop_columns = [col for col in list(df.columns) if col not in list(new_column_name.keys())]
     df.drop(drop_columns, axis=1, inplace=True)
-    print("saving to csv")
+
     #renaming the columns to map to Dublin Core and writing to csv
     df.rename(columns = new_column_name,inplace=True)
     df = df.sort_index(axis=1)
