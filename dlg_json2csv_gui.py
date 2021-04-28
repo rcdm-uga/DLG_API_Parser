@@ -164,8 +164,10 @@ def make_csv(url_file, csv_name, dlg_mapping, output_location):
     df = df.sort_index(axis=1)
     df.to_csv(csv_name, index=False)
 
-    # Communicate script success to user.
-    sg.Popup("CSV has been created.")
+    # Communicate that the script has completed to user in the GUI dialogue box.
+    print(f"\nThe requested CSV has been made and is in the {output_location} folder. "
+          f"You may submit information to create another CSV or close this program.")
+    window.Refresh()
 
 
 # Defines a GUI for users to provide the input needed for this script and
@@ -187,7 +189,8 @@ layout_three = [[sg.Text("Mapping", font=("roboto", 12)),
                  sg.Input(default_text="DLG_Mapping.csv", key="mapping_csv"), sg.FileBrowse()]]
 
 layout = [[sg.Column(layout_one), sg.Column(layout_two)],
-          [sg.Frame("Optional", layout_three, font=("roboto", 15))]]
+          [sg.Frame("Optional", layout_three, font=("roboto", 15))],
+          [sg.Output(size=(90, 10))]]
 
 window = sg.Window("DLG API Parser: Make a CSV from DLG Metadata", layout)
 
@@ -202,6 +205,10 @@ while True:
     # If the user submitted values, tests they are correct. If not, errors are displayed. If yes, the script is run.
     # TODO: change formatting on boxes with errors?
     if event == "submit":
+
+        # Communicate that the script is starting to the user in the GUI dialogue box.
+        print("Please wait while the CSV you requested is generated...")
+        window.Refresh()
 
         # Error testing on all of the user inputs. Required fields cannot be empty and paths must be valid.
         # Errors are saved to a list so all values can be tested prior to notifying the user.
