@@ -183,17 +183,19 @@ gc.disable()
 # to receive messages about errors to their inputs and the script progress.
 sg.theme("DarkTeal6")
 
-layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 12))],
-              [sg.Text('Folder to save output', font=("roboto", 12))],
-              [sg.Text('Name for the output CSV', font=("roboto", 12))],
+layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 13))],
+              [sg.Text('Folder to save output', font=("roboto", 13))],
+              [sg.Text('Name for the output CSV', font=("roboto", 13))],
               [sg.Text(font=("roboto", 1))],
               [sg.Submit(key="submit", disabled=False), sg.Cancel()]]
 
 layout_two = [[sg.Input(key="input_csv"), sg.FileBrowse()],
               [sg.Input(key="output_folder"), sg.FolderBrowse()],
-              [sg.Input(key="output_name")]]
+              [sg.Input(key="output_name")],
+              [sg.Text(font=("roboto", 1))],
+              [sg.Text(font=("roboto", 13))]]
 
-layout_three = [[sg.Text("Mapping", font=("roboto", 12)),
+layout_three = [[sg.Text("Mapping", font=("roboto", 13)),
                  sg.Input(default_text="DLG_Mapping.csv", key="mapping_csv"), sg.FileBrowse()]]
 
 layout = [[sg.Column(layout_one), sg.Column(layout_two)],
