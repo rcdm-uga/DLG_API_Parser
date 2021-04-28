@@ -1,5 +1,10 @@
 # PyCharm files
-.idea/
+.idea
 
 # Files for testing
-test_files/
+test_files
+
+# Files for building the executable
+__pycache__
+build
+*.spec
