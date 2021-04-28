@@ -222,7 +222,7 @@ while True:
     if event == "submit":
 
         # Communicate that the script is starting to the user in the GUI dialogue box.
-        print("Please wait while the CSV you requested is generated...")
+        print("\nPlease wait while the CSV you requested is generated...")
         window.Refresh()
 
         # Error testing on all of the user inputs. Required fields cannot be empty and paths must be valid.
@@ -259,7 +259,14 @@ while True:
             if os.path.exists(output_csv):
                 override = sg.PopupYesNo("Do you want to replace the existing CSV?")
                 if override == "Yes":
-                    make_csv(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"])
+                    # For threading: run make_csv() in a thread.
+                    processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv,
+                                                                                values["mapping_csv"],
+                                                                                values["output_folder"], window))
+                    processing_thread.start()
+                    # Disable the submit button while make_csv() is running so users can't overwhelm computing resources
+                    # by requesting new CSVs before the first is done being created.
+                    window[f'{"submit"}'].update(disabled=True)
             else:
                 # For threading: run make_csv() in a thread.
                 processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv,
