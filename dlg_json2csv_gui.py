@@ -1,8 +1,9 @@
 """
 Parses JSON data from the DLG API into a CSV.
 A GUI is used to run the script so users don't need to interact with the command line.
+Threading is used so the GUI does not show an 'unresponsive' error because the script is running.
 """
-# TODO: should the user be notified of errors that don't quit the script?
+# Future development: should the user be notified of errors that don't quit the script, besides having the log made?
 
 import csv
 import os
@@ -12,9 +13,9 @@ import re
 import requests
 import sys
 
+# For threading.
 import threading
 import gc
-
 SCRIPT_THREAD = '-SCRIPT_THREAD-'
 
 
@@ -39,9 +40,6 @@ def dlg_json2list(url_list, output_location):
 
         # Grabbing the response JSON.
         try:
-            # The error check was important because of the older version, but I will keep it just in case. Now that I
-            # implemented reading the urls from the file instead of the command line, majority of the potential
-            # errors have been alleviated.
             response = requests.get(api_url)
             json_dict = response.json()
         except:
@@ -174,16 +172,15 @@ def make_csv(url_file, csv_name, dlg_mapping, output_location, gui_window):
           f"You may submit information to create another CSV or close this program.")
     window.Refresh()
 
-    # Threading
+    # For threading: indicates the thread for running the script is done.
     gui_window.write_event_value('-SCRIPT_THREAD-', (threading.current_thread().name,))
 
 
-# Needed for threading.
+# For threading. Disables garbage collecting, which is restarted with gc.collect() once the GUI starts.
 gc.disable()
 
 # Defines a GUI for users to provide the input needed for this script and
 # to receive messages about errors to their inputs and the script progress.
-
 sg.theme("DarkTeal6")
 
 layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 12))],
@@ -207,21 +204,21 @@ window = sg.Window("DLG API Parser: Make a CSV from DLG Metadata", layout)
 
 # Keeps the GUI open until the user quits the program. Receives user input, verifies the input,
 # and when all input is correct runs the program.
-# TODO: add a "reset" button to get the GUI back to original values if their next input is completely different.
+# Future development: add a "reset" button to get the GUI back to original values?
 while True:
 
-    # Needed for threading.
+    # For threading: start garbage collecting.
     gc.collect()
 
     # Gets the user input data and saves the input values to their own variables for easier referencing in the script.
     event, values = window.read()
 
-    # Threading: let user submit new information now that the thread is over.
+    # For threading: let the user submit new information now that the script thread is over.
     if event == SCRIPT_THREAD:
         window[f'{"submit"}'].update(disabled=False)
 
     # If the user submitted values, tests they are correct. If not, errors are displayed. If yes, the script is run.
-    # TODO: change formatting on boxes with errors?
+    # Future development: change formatting on boxes with errors to highlight them?
     if event == "submit":
 
         # Communicate that the script is starting to the user in the GUI dialogue box.
@@ -264,9 +261,13 @@ while True:
                 if override == "Yes":
                     make_csv(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"])
             else:
-                # Start a thread to run make_csv. Can't submit more while this is running.
-                processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"], window,))
+                # For threading: run make_csv() in a thread.
+                processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv,
+                                                                            values["mapping_csv"],
+                                                                            values["output_folder"], window))
                 processing_thread.start()
+                # Disable the submit button while make_csv() is running so users can't overwhelm computing resources
+                # by requesting new CSVs before the first is done being created.
                 window[f'{"submit"}'].update(disabled=True)
 
         # If some of the user inputs were not correct, creates a pop up box with the errors.
@@ -277,4 +278,4 @@ while True:
 
     # If the user clicked cancel or the X on the GUI, quites the script.
     if event in ("Cancel", None):
-        exit()
+        sys.exit()
