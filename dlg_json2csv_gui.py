@@ -183,13 +183,13 @@ gc.disable()
 # to receive messages about errors to their inputs and the script progress.
 sg.theme("DarkTeal6")
 
-layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 13))],
+layout_one = [[sg.Text('Path to file with DLG URLs', font=("roboto", 13))],
               [sg.Text('Folder to save output', font=("roboto", 13))],
               [sg.Text('Name for the output CSV', font=("roboto", 13))],
               [sg.Text(font=("roboto", 1))],
               [sg.Submit(key="submit", disabled=False), sg.Cancel()]]
 
-layout_two = [[sg.Input(key="input_csv"), sg.FileBrowse()],
+layout_two = [[sg.Input(key="input_file"), sg.FileBrowse()],
               [sg.Input(key="output_folder"), sg.FolderBrowse()],
               [sg.Input(key="output_name")],
               [sg.Text(font=("roboto", 1))],
@@ -230,9 +230,9 @@ while True:
         # Error testing on all of the user inputs. Required fields cannot be empty and paths must be valid.
         # Errors are saved to a list so all values can be tested prior to notifying the user.
         errors = []
-        if values["input_csv"] == "":
+        if values["input_file"] == "":
             errors.append("Input CSV can't be blank.")
-        if not os.path.exists(values["input_csv"]):
+        if not os.path.exists(values["input_file"]):
             errors.append("Input CSV path is not correct.")
         if values["output_folder"] == "":
             errors.append("Output folder cannot be blank.")
@@ -262,7 +262,7 @@ while True:
                 override = sg.PopupYesNo("Do you want to replace the existing CSV?")
                 if override == "Yes":
                     # For threading: run make_csv() in a thread.
-                    processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv,
+                    processing_thread = threading.Thread(target=make_csv, args=(values["input_file"], output_csv,
                                                                                 values["mapping_csv"],
                                                                                 values["output_folder"], window))
                     processing_thread.start()
@@ -271,7 +271,7 @@ while True:
                     window[f'{"submit"}'].update(disabled=True)
             else:
                 # For threading: run make_csv() in a thread.
-                processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv,
+                processing_thread = threading.Thread(target=make_csv, args=(values["input_file"], output_csv,
                                                                             values["mapping_csv"],
                                                                             values["output_folder"], window))
                 processing_thread.start()
