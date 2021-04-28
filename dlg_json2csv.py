@@ -59,55 +59,43 @@ def dlg_json2list(url_list):
             #every page. This entire else statement handles that.
 
             total_pages = json_dict['response']['pages']['total_pages']
-            current_page = json_dict['response']['pages']['current_page']
-            next_page = json_dict['response']['pages']['next_page']
 
-            while True:
-                #This loop will add each dictionary to the list and the prepare the
-                #next url for the next iteration
+            # Saves the results from the first page of the API call to the list.
+            for item in json_dict['response']['docs']:
+                list_json.append(item)
+
+            # If there are multiple pages, calculates the api_url for all the other pages and adds them to the list.
+            # Stops when the total number of pages is reached.
+            if total_pages > 1:
+
+                # Range produces a sequence of numbers from 2 - last page number.
+                for page in range(2, total_pages + 1):
+
+                    # Create the api_url for the next page.
+                    page_str = 'page=' + str(page)
+                    if type(re.search(r'page=\d+', api_url)) == re.Match:
+                        api_url = re.sub(r'page=\d+', page_str, api_url)
+                    else:
+                        # For the first iteration, which doesn't have 'page=\d' yet.
+                        page_str = '?' + page_str + '&'
+                        api_url = re.sub(r'\?', page_str, api_url)
+
+                    # Grabbing the response and JSON for the new api_url.
+                    try:
+                        response = requests.get(api_url)
+                        json_dict = response.json()
+                    except:
+                        print('Something happened on page {} of this URL: {}'.format(page, re.sub('\.json','',api_url)))
+
+                    # Saves the response to the list.
+                    for item in json_dict['response']['docs']:
+                        list_json.append(item)
 
 
-                for dict in json_dict['response']['docs']:
-                    list_json.append(dict)
-
-                next_page_str = 'page=' + str(next_page)
-
-                #changing the page number in the search results
-                if type(re.search('page=\d+',api_url)) == re.Match:
-                    api_url = re.sub('page=\d+',next_page_str,api_url)
-                else:
-                    #Should only be entered the first iteration, the remaining links
-                    #should already contain 'page=\d' from previous iteration
-                    next_page_str = '?' + next_page_str + '&'
-                    api_url = re.sub('\?',next_page_str,api_url)
-
-                #Grabbing the response and json
-
-                try:
-                    #Just continuing to check for a potential error.
-                    response = requests.get(api_url)
-                    json_dict = response.json()
-                except:
-                    print('Something happened on page {} of this URL: {}'.format(next_page+1, re.sub('\.json','',api_url)))
-
-                #Updating variables
-                current_page = json_dict['response']['pages']['current_page']
-                next_page = json_dict['response']['pages']['next_page']
-
-                '''
-                This is the contiton that will end the while loop. So once current_page
-                is the same at total_pages, grab the last amount of dictionaries and
-                break the loop
-                '''
-                if current_page == total_pages:
-                        for dict in json_dict['response']['docs']:
-                            list_json.append(dict)
-                        break
     #Error Check. list_json should have 1 or more items inside. otherwise exit.
     if len(list_json) < 1:
         print('Was not able to grab any of the URLs. Please check them.')
         sys.exit()
-
 
     '''
     This loop with iterate through each item of list_json to convert each
@@ -144,7 +132,6 @@ def dlg_json2list(url_list):
                         item[key] = requests.get(item[key]).url
                     except:
                         print(item[key])
-
     return list_json
 
 if __name__ == '__main__':
@@ -177,10 +164,8 @@ if __name__ == '__main__':
         for line in dlg_urls:
             url_list.append(line.strip())
 
-
     #Grabbing the complete list of jsons from the provided URLs
     list_json = dlg_json2list(url_list)
-
     df = pd.DataFrame.from_dict(list_json)
 
     #Initalizing the DLG Mapping dict
