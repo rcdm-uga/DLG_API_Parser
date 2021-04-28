@@ -279,11 +279,14 @@ while True:
                 # by requesting new CSVs before the first is done being created.
                 window[f'{"submit"}'].update(disabled=True)
 
-        # If some of the user inputs were not correct, creates a pop up box with the errors.
+        # If some of the user inputs were not correct, creates a pop up box alerting the user to the problem
+        # and prints the errors in the GUI dialogue box.
         # The user may then edit the provided input and resubmit.
         else:
-            error_message = "\n".join(errors)
-            sg.Popup(error_message)
+            sg.Popup("CSV could not be created with the provided information. See the program window for details.")
+            print("\nThe CSV could not be created. Please correct the following information and submit again.")
+            print("\n".join(errors))
+            window.Refresh()
 
     # If the user clicked cancel or the X on the GUI, quites the script.
     if event in ("Cancel", None):
