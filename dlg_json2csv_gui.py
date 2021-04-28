@@ -12,6 +12,11 @@ import re
 import requests
 import sys
 
+import threading
+import gc
+
+SCRIPT_THREAD = '-SCRIPT_THREAD-'
+
 
 def dlg_json2list(url_list, output_location):
     """Gets the JSON from th DLG API for every value in the url_list and results it as a list.
@@ -133,7 +138,7 @@ def dlg_json2list(url_list, output_location):
     return json_list
 
 
-def make_csv(url_file, csv_name, dlg_mapping, output_location):
+def make_csv(url_file, csv_name, dlg_mapping, output_location, gui_window):
     """Creates a CSV of data from the DLG API for all specified items. """
 
     # Grabbing all of the URLs in the file to then be parsed.
@@ -169,6 +174,12 @@ def make_csv(url_file, csv_name, dlg_mapping, output_location):
           f"You may submit information to create another CSV or close this program.")
     window.Refresh()
 
+    # Threading
+    gui_window.write_event_value('-SCRIPT_THREAD-', (threading.current_thread().name,))
+
+
+# Needed for threading.
+gc.disable()
 
 # Defines a GUI for users to provide the input needed for this script and
 # to receive messages about errors to their inputs and the script progress.
@@ -179,7 +190,7 @@ layout_one = [[sg.Text('Path to CSV with DLG URLs', font=("roboto", 12))],
               [sg.Text('Folder to save output', font=("roboto", 12))],
               [sg.Text('Name for the output CSV', font=("roboto", 12))],
               [sg.Text(font=("roboto", 1))],
-              [sg.Submit(key="submit"), sg.Cancel()]]
+              [sg.Submit(key="submit", disabled=False), sg.Cancel()]]
 
 layout_two = [[sg.Input(key="input_csv"), sg.FileBrowse()],
               [sg.Input(key="output_folder"), sg.FolderBrowse()],
@@ -199,8 +210,15 @@ window = sg.Window("DLG API Parser: Make a CSV from DLG Metadata", layout)
 # TODO: add a "reset" button to get the GUI back to original values if their next input is completely different.
 while True:
 
+    # Needed for threading.
+    gc.collect()
+
     # Gets the user input data and saves the input values to their own variables for easier referencing in the script.
     event, values = window.read()
+
+    # Threading: let user submit new information now that the thread is over.
+    if event == SCRIPT_THREAD:
+        window[f'{"submit"}'].update(disabled=False)
 
     # If the user submitted values, tests they are correct. If not, errors are displayed. If yes, the script is run.
     # TODO: change formatting on boxes with errors?
@@ -246,7 +264,10 @@ while True:
                 if override == "Yes":
                     make_csv(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"])
             else:
-                make_csv(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"])
+                # Start a thread to run make_csv. Can't submit more while this is running.
+                processing_thread = threading.Thread(target=make_csv, args=(values["input_csv"], output_csv, values["mapping_csv"], values["output_folder"], window,))
+                processing_thread.start()
+                window[f'{"submit"}'].update(disabled=True)
 
         # If some of the user inputs were not correct, creates a pop up box with the errors.
         # The user may then edit the provided input and resubmit.
