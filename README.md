@@ -27,8 +27,10 @@ The specifics about Omeka's CSVImport will be in `DLG_Omeka_API_Pipeline.pdf` fi
 
    * **sample_urls.txt** is just a sample file that will successfully run through the program. Each of the three URLs are of different cases, illustrating that it can handle any type of URL from the DLG website. (Besides https://dlg.usg.edu)
 
-### How to Run
-1. Download the executable and save it to your local machine. 
+### How to Run in Windows
+If you need to run this script on a Mac or prefer to use the command line, see the Command Line Instructions.
+
+1. Download the DLG_API_Parser_v# executable from the Releases section of this page (right hand column) and save it to your local machine. You may need to ignore warnings from your computer about downloading and running this type of file from the internet.
 2. Save a copy of DLG_Mapping.csv or the mapping CSV you want to use in the same folder as the executable.
 3. Double-click on the executable to start the program.
 4. Enter the required information into the program.
